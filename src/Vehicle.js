@@ -5,7 +5,12 @@ import { useControls } from './utils/useControls';
 import Drifter from './Drifter';
 import Wheel from './Wheel';
 
-function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.75, force = 2000, maxBrake = 1e5, ...props }) {
+const RIGHT_BOUNDARY = 20;
+const LEFT_BOUNDARY = -20;
+const FORWARD_BOUNDARY = 10;
+const BACKWARD_BOUNDARY = -20;
+
+function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, ...props }) {
   const chassis = useRef();
   const wheel1 = useRef();
   const wheel2 = useRef();
@@ -43,16 +48,59 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
     indexUpAxis: 1
   }));
 
+  const resetCar = () => {
+    chassis.current.api.position.set(0, 0.5, 0);
+    chassis.current.api.velocity.set(0, 0, 0);
+    chassis.current.api.angularVelocity.set(0, 0.5, 0);
+    chassis.current.api.rotation.set(0, -Math.PI / 4, 0);
+  };
+
   useFrame(() => {
     const { forward, backward, left, right, brake, reset } = controls.current;
     for (let e = 2; e < 4; e++) api.applyEngineForce(forward || backward ? force * (forward && !backward ? -1 : 1) : 0, 2);
+
     for (let s = 0; s < 2; s++) api.setSteeringValue(left || right ? steer * (left && !right ? 1 : -1) : 0, s);
+
     for (let b = 2; b < 4; b++) api.setBrake(brake ? maxBrake : 0, b);
+
     if (reset) {
-      chassis.current.api.position.set(0, 0.5, 0);
+      resetCar();
+      return;
+    }
+  });
+
+  // Creating boundaries lol
+  useFrame(() => {
+    if (!chassis.current.position) {
+      return;
+    }
+
+    if (chassis.current.position.x > RIGHT_BOUNDARY) {
+      chassis.current.api.position.set(-20, chassis.current.position.y, 0);
       chassis.current.api.velocity.set(0, 0, 0);
       chassis.current.api.angularVelocity.set(0, 0.5, 0);
-      chassis.current.api.rotation.set(0, -Math.PI / 4, 0);
+      return;
+    }
+
+    if (chassis.current.position.x < LEFT_BOUNDARY) {
+      chassis.current.api.position.set(20, chassis.current.position.y, 0);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, 0.5, 0);
+      return;
+    }
+
+    if (chassis.current.position.z > FORWARD_BOUNDARY) {
+      chassis.current.api.position.set(0, chassis.current.position.y, -18);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, 0.5, 0);
+      return;
+    }
+
+    if (chassis.current.position.z < BACKWARD_BOUNDARY) {
+      chassis.current.api.position.set(0, chassis.current.position.y, 8);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, 0.5, 0);
+      return;
     }
   });
 

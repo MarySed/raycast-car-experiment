@@ -6,17 +6,40 @@ source: https://sketchfab.com/3d-models/low-poly-truck-car-drifter-f3750246b6564
 title: Low-poly truck (car "Drifter")
 */
 
-import React, { forwardRef, useRef } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import React, { forwardRef } from 'react';
+import { useGLTF } from '@react-three/drei';
 import { useBox } from '@react-three/cannon';
 
-const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, ...props }, ref) => {
-  const { nodes, materials, animations } = useGLTF('/drifter.glb');
+const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, setVisible, ...props }, ref) => {
+  const { nodes, materials } = useGLTF('/drifter.glb');
 
-  const [, api] = useBox(() => ({ mass, args, allowSleep: false, onCollide: (e) => console.log('bonk', e.body.userData), ...props }), ref);
+  const [, api] = useBox(
+    () => ({
+      mass,
+      args,
+      allowSleep: false,
+      onCollide: (e) => {
+        const health = e.body.userData.health ?? undefined;
+
+        if (health) {
+          e.body.userData.health += -10;
+          return;
+        }
+
+        if (e.body.userData.health === 0) {
+          console.log(e.body.visible, 'Murderrrrr');
+          e.body.visible = false;
+
+          return;
+        }
+      },
+      ...props
+    }),
+    ref
+  );
 
   return (
-    <mesh ref={ref} api={api} {...props}>
+    <mesh ref={ref} api={api} userData={{ id: 'drifter' }} {...props}>
       <group position={[0, -0, 0]} scale={[0.009, 0.009, 0.009]} dispose={null}>
         <group rotation={[0, 0, 0]}>
           <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
