@@ -19,19 +19,17 @@ const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, setVisible, ...pro
       args,
       allowSleep: false,
       onCollide: (e) => {
-        const health = e.body.userData.health ?? undefined;
-
-        if (health) {
-          e.body.userData.health += -10;
-          return;
-        }
-
-        if (e.body.userData.health === 0) {
-          console.log(e.body.visible, 'Murderrrrr');
-          e.body.visible = false;
-
-          return;
-        }
+        // Temporarily removing health system
+        // const health = e.body.userData.health ?? undefined;
+        // if (health) {
+        //   e.body.userData.health += -10;
+        //   return;
+        // }
+        // if (e.body.userData.health === 0) {
+        //   console.log(e.body.visible, 'Murderrrrr');
+        //   e.body.visible = false;
+        //   return;
+        // }
       },
       ...props
     }),
@@ -44,8 +42,8 @@ const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, setVisible, ...pro
         <group rotation={[0, 0, 0]}>
           <group rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
             <group name="Frame" rotation={[0, 0, 0]} scale={[300, 100, 50]}>
-              <mesh geometry={nodes.Frame_Orange_0.geometry} material={materials.Orange} />
-              <mesh geometry={nodes.Frame_Black_0.geometry} material={nodes.Frame_Black_0.material} />
+              <mesh geometry={nodes.Frame_Orange_0.geometry} material={materials.Orange} castShadow />
+              <mesh geometry={nodes.Frame_Black_0.geometry} material={nodes.Frame_Black_0.material} castShadow />
               <mesh geometry={nodes.Frame_Glass_0.geometry} material={materials.Glass} />
               <mesh geometry={nodes.Frame_Light_0.geometry} material={materials.Light} />
               <mesh geometry={nodes.Frame_Light_red_0.geometry} material={materials.Light_red} />
@@ -53,7 +51,7 @@ const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, setVisible, ...pro
               <mesh geometry={nodes.Frame_Dark_brown_handle_0.geometry} material={materials.Dark_brown_handle} />
               <mesh geometry={nodes.Frame_Glass_trailer_0.geometry} material={materials.Glass_trailer} />
               <mesh geometry={nodes.Frame_Light_black_0.geometry} material={nodes.Frame_Light_black_0.material} />
-              <mesh geometry={nodes.Frame_Brown_0.geometry} material={materials.Brown} />
+              <mesh geometry={nodes.Frame_Brown_0.geometry} material={materials.Brown} castShadow />
             </group>
           </group>
         </group>
