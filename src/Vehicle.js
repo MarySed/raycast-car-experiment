@@ -5,8 +5,10 @@ import { useControls } from './utils/useControls';
 import Drifter from './Drifter';
 import Wheel from './Wheel';
 
-const RIGHT_BOUNDARY = 20;
-const LEFT_BOUNDARY = -20;
+const RIGHT_BOUNDARY = 17;
+const RIGHT_SPAWN_POINT = 15;
+const LEFT_BOUNDARY = -17;
+const LEFT_SPAWN_POINT = -15;
 const FORWARD_BOUNDARY = 10;
 const BACKWARD_BOUNDARY = -20;
 
@@ -76,14 +78,14 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
     }
 
     if (chassis.current.position.x > RIGHT_BOUNDARY) {
-      chassis.current.api.position.set(-20, chassis.current.position.y, 0);
+      chassis.current.api.position.set(LEFT_SPAWN_POINT, chassis.current.position.y, 0);
       chassis.current.api.velocity.set(0, 0, 0);
       chassis.current.api.angularVelocity.set(0, 0.5, 0);
       return;
     }
 
     if (chassis.current.position.x < LEFT_BOUNDARY) {
-      chassis.current.api.position.set(20, chassis.current.position.y, 0);
+      chassis.current.api.position.set(RIGHT_SPAWN_POINT, chassis.current.position.y, 0);
       chassis.current.api.velocity.set(0, 0, 0);
       chassis.current.api.angularVelocity.set(0, 0.5, 0);
       return;
