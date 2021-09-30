@@ -5,34 +5,6 @@ import { Physics, useCylinder, usePlane, useBox } from '@react-three/cannon';
 import { OrbitControls, Environment } from '@react-three/drei';
 import Vehicle from './Vehicle';
 
-const Letter = (props) => {
-  const [ref] = useBox(() => ({ mass: 100, ...props }));
-
-  const font = useLoader(THREE.FontLoader, 'IBM_Plex_Serif_Bold.json');
-
-  const config = useMemo(
-    () => ({
-      font,
-      size: 1.5,
-      height: 0.4,
-      curveSegments: 24,
-      bevelEnabled: false,
-      bevelThickness: 0,
-      bevelSize: 0.3,
-      bevelOffset: 0,
-      bevelSegments: 10
-    }),
-    [font]
-  );
-
-  return (
-    <mesh ref={ref}>
-      <textBufferGeometry args={[props.children, config]} />
-      <meshPhongMaterial />
-    </mesh>
-  );
-};
-
 const Box = (props) => {
   const [ref] = useBox(() => ({ mass: 1, ...props }));
 
@@ -67,6 +39,74 @@ const Pillar = ({ args = [0.7, 0.7, 5, 16], onCollide, ...props }) => {
   );
 };
 
+const Letter = ({ offset, offsetZ, textGeo }) => {
+  const position = new THREE.Vector3(offset, 2, offsetZ);
+
+  const [ref] = useBox(() => ({
+    mass: 1000,
+    position: [position.x, position.y, position.z],
+    args: [textGeo?.textSize.x, textGeo?.textSize.y, textGeo?.textSize.z / 2]
+  }));
+
+  if (!textGeo) {
+    return null;
+  }
+
+  return (
+    <mesh ref={ref} castShadow>
+      <primitive object={textGeo?.textGeo} attach="geometry" />
+      <meshPhongMaterial />
+    </mesh>
+  );
+};
+
+const Text = ({ text }) => {
+  const font = useLoader(THREE.FontLoader, 'Oleo Script_Regular.json');
+
+  const config = useMemo(
+    () => ({
+      font,
+      size: 1,
+      height: 0.5,
+      curveSegments: 24,
+      bevelEnabled: false
+    }),
+    [font]
+  );
+
+  const letterGeometriesArr = text.split('').map((letter) => {
+    const textGeo = new THREE.TextGeometry(letter, config);
+    // You need to manually compute bounding box for geometries
+    textGeo.computeBoundingBox();
+    textGeo.center();
+
+    // If you have the bounding box (initially null) get its size or else just create a new vector3
+    const textSize = textGeo?.boundingBox?.getSize(new THREE.Vector3()) ?? new THREE.Vector3();
+
+    return { textGeo: textGeo, textSize: textSize };
+  });
+
+  const letterSpacing = 0.2;
+
+  const textOffsets = letterGeometriesArr.reduce((acc, curr, idx, arr) => {
+    const currLetterWidth = curr?.textSize?.x;
+    const prevLetterWidth = arr[idx - 1]?.textSize?.x ?? 0;
+
+    const distanceToCenter = idx > 0 ? acc[acc.length - 1] + (currLetterWidth + prevLetterWidth) / 2 + letterSpacing : 0;
+    acc.push(distanceToCenter);
+
+    return acc;
+  }, []);
+
+  return (
+    <group>
+      {letterGeometriesArr.map((textGeo, idx) => {
+        return <Letter offsetZ={5} offset={textOffsets[idx]} textGeo={textGeo} key={idx} />;
+      })}
+    </group>
+  );
+};
+
 export default function App() {
   const [bgColor, setBgColor] = useState(['#FFB344']);
 
@@ -80,6 +120,7 @@ export default function App() {
         <directionalLight position={[0, 1000, 0]} intensity={0.2} />
         <spotLight position={[10, 10, 10]} angle={0.5} intensity={1} castShadow penumbra={0.8} />
         <Physics broadphase="SAP" contactEquationRelaxation={4} friction={1e-3} allowSleep>
+          <Text text="Halloween" />
           <Letter position={[-4, 1, 5]}>H</Letter>
           <Letter position={[-2, 1, 5]}>E</Letter>
           <Letter position={[0, 1, 5]}>L</Letter>
@@ -105,6 +146,7 @@ export default function App() {
           WASD to drive, space to brake
           <br />R to reset
         </pre>
+        <div>WELCOME TO HELL</div>
       </div>
     </>
   );
