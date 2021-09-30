@@ -60,14 +60,14 @@ const Letter = ({ offset, offsetZ, textGeo }) => {
   );
 };
 
-const Text = ({ text }) => {
-  const font = useLoader(THREE.FontLoader, 'Oleo Script_Regular.json');
+const Text = ({ text, textPosition }) => {
+  const font = useLoader(THREE.FontLoader, 'Oleo_Script_Regular.json');
 
   const config = useMemo(
     () => ({
       font,
-      size: 1,
-      height: 0.5,
+      size: 2,
+      height: 1,
       curveSegments: 24,
       bevelEnabled: false
     }),
@@ -99,9 +99,9 @@ const Text = ({ text }) => {
   }, []);
 
   return (
-    <group>
+    <group position={textPosition}>
       {letterGeometriesArr.map((textGeo, idx) => {
-        return <Letter offsetZ={5} offset={textOffsets[idx]} textGeo={textGeo} key={idx} />;
+        return <Letter offsetZ={-5} offset={textOffsets[idx]} textGeo={textGeo} key={idx} />;
       })}
     </group>
   );
@@ -110,27 +110,20 @@ const Text = ({ text }) => {
 export default function App() {
   const [bgColor, setBgColor] = useState(['#FFB344']);
 
-  // #171720
   return (
     <>
-      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 5, 15], fov: 50 }}>
+      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 5, 15], fov: 70 }}>
         <fog attach="fog" args={['#FFB344', 10, 50]} />
         <color attach="background" args={bgColor} />
         <ambientLight intensity={0.4} color={'#FFB344'} />
         <directionalLight position={[0, 1000, 0]} intensity={0.2} />
         <spotLight position={[10, 10, 10]} angle={0.5} intensity={1} castShadow penumbra={0.8} />
         <Physics broadphase="SAP" contactEquationRelaxation={4} friction={1e-3} allowSleep>
-          <Text text="Halloween" />
-          <Letter position={[-4, 1, 5]}>H</Letter>
-          <Letter position={[-2, 1, 5]}>E</Letter>
-          <Letter position={[0, 1, 5]}>L</Letter>
-          <Letter position={[2, 1, 5]}>L</Letter>
-          <Letter position={[4, 1, 5]}>0</Letter>
+          <Text text="Halloween" textPosition={[-5, 0, 0]} />
           <Plane rotation={[-Math.PI / 2, 0, 0]} userData={{ id: 'floor' }} bgColor={bgColor[0]} />
           <Vehicle position={[0, 2, 0]} rotation={[0, -Math.PI / 4, 0]} angularVelocity={[0, 1, 0]} wheelRadius={2} />
-          <Pillar position={[-5, 2.5, -5]} userData={{ id: 'pillar-1', health: 100 }} />
-          <Pillar position={[0, 2.5, -5]} userData={{ id: 'pillar-2', health: 100 }} />
-          <Pillar position={[5, 2.5, -5]} userData={{ id: 'pillar-3', health: 100 }} />
+          <Pillar position={[-5, 2.5, 2]} userData={{ id: 'pillar-1', health: 100 }} />
+          <Pillar position={[5, 2.5, 3]} userData={{ id: 'pillar-3', health: 100 }} />
           <Box position={[2, 2.5, 0]} userData={{ id: 'box-1', health: 80 }} />
         </Physics>
         <Suspense fallback={null}>
@@ -140,13 +133,16 @@ export default function App() {
       </Canvas>
 
       <div style={{ position: 'absolute', top: 30, left: 40 }}>
-        <pre>
-          Will not work in the codesandbox preview.
-          <br />
-          WASD to drive, space to brake
-          <br />R to reset
-        </pre>
-        <div>WELCOME TO HELL</div>
+        <h1 className="title">It's Halloween</h1>
+        <div className="controls">
+          <p className="controls-content">
+            Use the <strong>arrow keys</strong> to drive
+            <br />
+            Hit the breaks with <strong>space</strong>
+            <br />
+            Reset the car with <strong>r</strong>
+          </p>
+        </div>
       </div>
     </>
   );
