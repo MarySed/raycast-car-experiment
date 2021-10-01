@@ -15,13 +15,14 @@ export function useKeyPress(target, event) {
 }
 
 export function useControls() {
-  const keys = useRef({ forward: false, backward: false, left: false, right: false, brake: false, reset: false });
+  const keys = useRef({ forward: false, backward: false, left: false, right: false, brake: false, reset: false, test: false });
   useKeyPress(['ArrowUp'], (pressed) => (keys.current.forward = pressed));
   useKeyPress(['ArrowDown'], (pressed) => (keys.current.backward = pressed));
   useKeyPress(['ArrowLeft'], (pressed) => (keys.current.left = pressed));
   useKeyPress(['ArrowRight'], (pressed) => (keys.current.right = pressed));
   useKeyPress([' '], (pressed) => (keys.current.brake = pressed));
   useKeyPress(['r'], (pressed) => (keys.current.reset = pressed));
+  useKeyPress(['t'], (pressed) => (keys.current.test = pressed));
 
   return keys;
 }

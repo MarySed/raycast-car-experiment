@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, Suspense, useRef } from 'react';
 import * as THREE from 'three';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { Physics, usePlane, useBox } from '@react-three/cannon';
@@ -6,12 +6,6 @@ import { Loader, OrbitControls, Text as DreiText } from '@react-three/drei';
 import Vehicle from './Vehicle';
 
 const DEFAULT_LETTER_SPACING = 0.2;
-const RIGHT_BOUNDARY = 17;
-const RIGHT_SPAWN_POINT = 15;
-const LEFT_BOUNDARY = -17;
-const LEFT_SPAWN_POINT = -15;
-const FORWARD_BOUNDARY = 10;
-const BACKWARD_BOUNDARY = -20;
 
 const Box = ({ onCollide, position, mass = 1, size = [2, 2, 2], wireframe = false, isTrigger = false, opacity = 1 }) => {
   const [ref] = useBox(() => ({
@@ -25,7 +19,7 @@ const Box = ({ onCollide, position, mass = 1, size = [2, 2, 2], wireframe = fals
   return (
     <mesh ref={ref} position={position} castShadow={opacity > 0}>
       <boxGeometry args={size} />
-      <meshPhongMaterial wireframe={wireframe} transparent opacity={opacity} />
+      <meshLambertMaterial wireframe={wireframe} transparent opacity={opacity} />
     </mesh>
   );
 };
@@ -59,7 +53,7 @@ const Letter = ({ offset, offsetY, offsetZ, textGeo, mass = 100 }) => {
   return (
     <mesh ref={ref} castShadow>
       <primitive object={textGeo?.textGeo} attach="geometry" />
-      <meshPhongMaterial />
+      <meshLambertMaterial />
     </mesh>
   );
 };
@@ -108,29 +102,56 @@ const Text = ({ text, textPosition, size, depth, mass, kerning = DEFAULT_LETTER_
   });
 };
 
-const Lights = () => {
+const Lights = ({ color }) => {
+  // color={'#DA2D2D'}
+
   return (
     <group>
-      <ambientLight intensity={0.4} color={'#FFB344'} />
+      <ambientLight intensity={0.6} color={color} />
       <directionalLight position={[0, 1000, 0]} intensity={0.2} />
       <spotLight position={[10, 10, 10]} angle={0.5} intensity={1} castShadow penumbra={0.8} />
     </group>
   );
 };
 
+const CursedGateOne = ({ setBgColor, setLightColor, setMessage, setDisplayMessage }) => {
+  return (
+    <Box
+      isTrigger
+      position={[0, 2, 7]}
+      size={[5, 2.5, 1]}
+      wireframe
+      onCollide={(e) => {
+        setBgColor('#FF0000');
+        setLightColor('#FF0000');
+        setMessage('Ok so like this is a work in progress lol');
+        setDisplayMessage(false);
+      }}
+      data={{ name: 'cursed-doorway' }}
+      mass={0}
+      opacity={0}
+    />
+  );
+};
+
 export default function App() {
+  // will move to zustand state if I feel up to it
   const [bgColor, setBgColor] = useState('#FFB344');
-  const [message, setMessage] = useState('');
+  const [lightColor, setLightColor] = useState('#FFB344');
+  const [message, setMessage] = useState('Welcome to hell');
+  const [displayMessage, setDisplayMessage] = useState(true);
 
   return (
     <>
-      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 5, 15], fov: 50 }}>
+      <Canvas shadows camera={{ position: [0, 5, 15], fov: 50 }} mode="concurrent">
         <fog attach="fog" args={[bgColor, 10, 50]} />
         <color attach="background" args={[bgColor]} />
-        <Lights />
-        <DreiText position={[0, 0.2, 7]} rotation={[-Math.PI / 2, 0, 0]} fontSize={1}>
-          Drive at me!
-        </DreiText>
+        <Lights color={lightColor} />
+        {displayMessage && (
+          <DreiText position={[0, 0.2, 7]} rotation={[-Math.PI / 2, 0, 0]} fontSize={1}>
+            Drive here...
+          </DreiText>
+        )}
         <Physics broadphase="SAP" contactEquationRelaxation={4} friction={1e-3} allowSleep>
           <Suspense fallback={null}>
             <Text text="Halloween" textPosition={{ x: -9, y: 2, z: -5 }} size={4} depth={1} />
@@ -138,21 +159,7 @@ export default function App() {
             <Vehicle position={[0, 2, 0]} rotation={[0, -Math.PI / 4, 0]} angularVelocity={[0, 1, 0]} wheelRadius={2} />
             <Box position={[-5, 2.5, 2]} data={{ name: 'box-1' }} />
             <Box isTrigger={true} position={[5, 2.5, 3]} data={{ name: 'box-2' }} mass={0} />
-            <Box
-              isTrigger
-              position={[0, 2, 7]}
-              size={[5, 2.5, 1]}
-              wireframe
-              onCollide={(e) => {
-                if (bgColor !== '#150050') {
-                  setBgColor('#150050');
-                  setMessage('This is a work in progress lol');
-                }
-              }}
-              data={{ name: 'cursed-doorway' }}
-              mass={0}
-              opacity={0}
-            />
+            <CursedGateOne setBgColor={setBgColor} setLightColor={setLightColor} setMessage={setMessage} setDisplayMessage={setDisplayMessage} />
           </Suspense>
         </Physics>
         <OrbitControls />
@@ -162,11 +169,7 @@ export default function App() {
       <div style={{ position: 'absolute', top: 30, left: 40 }}>
         <h1 className="title">It's Halloween!</h1>
         <div className="controls">
-          <p
-            className="controls-content"
-            onClick={() => {
-              console.log();
-            }}>
+          <p className="controls-content">
             Use the <strong>arrow keys</strong> to drive
             <br />
             Hit the breaks with <strong>space</strong>

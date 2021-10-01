@@ -1,16 +1,24 @@
-import { useRef } from 'react';
+import { useRef, forwardRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useRaycastVehicle } from '@react-three/cannon';
 import { useControls } from './utils/useControls';
 import Drifter from './Drifter';
 import Wheel from './Wheel';
 
-function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, position, ...props }) {
+const RIGHT_BOUNDARY = 14;
+const RIGHT_SPAWN_POINT = 12;
+const LEFT_BOUNDARY = -14;
+const LEFT_SPAWN_POINT = -12;
+const FORWARD_BOUNDARY = 10;
+const BACKWARD_BOUNDARY = -20;
+
+const Vehicle = ({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, position, ...props }) => {
   const chassis = useRef();
   const wheel1 = useRef();
   const wheel2 = useRef();
   const wheel3 = useRef();
   const wheel4 = useRef();
+
   const controls = useControls();
 
   const wheelInfo = {
@@ -43,6 +51,13 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
     indexUpAxis: 1
   }));
 
+  // raycastVehicles, etc. (anything created in cannon) doesnt necessarily track position.
+  const vehiclePos = useRef([0, 0, 0]);
+
+  useEffect(() => {
+    chassis?.current?.api.position.subscribe((v) => (vehiclePos.current = v));
+  }, [api]);
+
   const resetCar = () => {
     chassis.current.api.position.set(0, 0.5, 0);
     chassis.current.api.velocity.set(0, 0, 0);
@@ -50,9 +65,40 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
     chassis.current.api.rotation.set(0, -Math.PI / 4, 0);
   };
 
+  const debugCar = () => {
+    console.log(vehiclePos, 'vehicle');
+  };
+
   useFrame(() => {
-    // console.log(vehicle, 'vehicel');
-    const { forward, backward, left, right, brake, reset } = controls.current;
+    if (vehiclePos.current[0] > RIGHT_BOUNDARY) {
+      chassis.current.api.position.set(LEFT_SPAWN_POINT, vehiclePos.current[1], 0);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, 0.5, 0);
+      return;
+    }
+
+    if (vehiclePos.current[0] < LEFT_BOUNDARY) {
+      chassis.current.api.position.set(RIGHT_SPAWN_POINT, vehiclePos.current[1], 0);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, 0.5, 0);
+      return;
+    }
+    if (vehiclePos.current[2] > FORWARD_BOUNDARY) {
+      chassis.current.api.position.set(0, 0.5, -18);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, vehiclePos.current[1], 0);
+      return;
+    }
+    if (vehiclePos.current[2] < BACKWARD_BOUNDARY) {
+      chassis.current.api.position.set(0, 0.5, 8);
+      chassis.current.api.velocity.set(0, 0, 0);
+      chassis.current.api.angularVelocity.set(0, vehiclePos.current[1], 0);
+      return;
+    }
+  });
+
+  useFrame(() => {
+    const { forward, backward, left, right, brake, reset, test } = controls.current;
 
     const forceMultiplier = forward && !backward ? -1 : 1;
     forward || backward ? api.applyEngineForce(force * forceMultiplier, 0) : api.applyEngineForce(0, 0);
@@ -74,10 +120,15 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
       resetCar();
       return;
     }
+
+    if (test) {
+      debugCar();
+      return;
+    }
   });
 
   return (
-    <group ref={vehicle} position={[0, -0.3, 0]}>
+    <group ref={vehicle} position={[0, -0.3, 0]} name="vehicle">
       <Drifter ref={chassis} position={position} rotation={props.rotation} angularVelocity={props.angularVelocity} />
       <Wheel ref={wheel1} radius={radius} leftSide />
       <Wheel ref={wheel2} radius={radius} />
@@ -85,6 +136,6 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
       <Wheel ref={wheel4} radius={radius} />
     </group>
   );
-}
+};
 
 export default Vehicle;
