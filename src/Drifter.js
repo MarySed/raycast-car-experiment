@@ -6,7 +6,7 @@ source: https://sketchfab.com/3d-models/low-poly-truck-car-drifter-f3750246b6564
 title: Low-poly truck (car "Drifter")
 */
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useBox } from '@react-three/cannon';
 
@@ -18,19 +18,6 @@ const Drifter = forwardRef(({ args = [1.7, 1, 4], mass = 500, setVisible, ...pro
       mass,
       args,
       allowSleep: false,
-      onCollide: (e) => {
-        // Temporarily removing health system
-        // const health = e.body.userData.health ?? undefined;
-        // if (health) {
-        //   e.body.userData.health += -10;
-        //   return;
-        // }
-        // if (e.body.userData.health === 0) {
-        //   console.log(e.body.visible, 'Murderrrrr');
-        //   e.body.visible = false;
-        //   return;
-        // }
-      },
       ...props
     }),
     ref
