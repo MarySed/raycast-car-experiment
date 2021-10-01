@@ -6,6 +6,7 @@ export function useKeyPress(target, event) {
     const upHandler = ({ key }) => target.indexOf(key) !== -1 && event(false);
     window.addEventListener('keydown', downHandler);
     window.addEventListener('keyup', upHandler);
+
     return () => {
       window.removeEventListener('keydown', downHandler);
       window.removeEventListener('keyup', upHandler);
@@ -21,5 +22,6 @@ export function useControls() {
   useKeyPress(['ArrowRight'], (pressed) => (keys.current.right = pressed));
   useKeyPress([' '], (pressed) => (keys.current.brake = pressed));
   useKeyPress(['r'], (pressed) => (keys.current.reset = pressed));
+
   return keys;
 }

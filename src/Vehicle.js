@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useRaycastVehicle } from '@react-three/cannon';
 import { useControls } from './utils/useControls';
 import Drifter from './Drifter';
 import Wheel from './Wheel';
 
-function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, ...props }) {
+function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, position, ...props }) {
   const chassis = useRef();
   const wheel1 = useRef();
   const wheel2 = useRef();
@@ -51,6 +51,7 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
   };
 
   useFrame(() => {
+    // console.log(vehicle, 'vehicel');
     const { forward, backward, left, right, brake, reset } = controls.current;
 
     const forceMultiplier = forward && !backward ? -1 : 1;
@@ -77,7 +78,7 @@ function Vehicle({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
 
   return (
     <group ref={vehicle} position={[0, -0.3, 0]}>
-      <Drifter ref={chassis} rotation={props.rotation} position={props.position} angularVelocity={props.angularVelocity} />
+      <Drifter ref={chassis} position={position} rotation={props.rotation} angularVelocity={props.angularVelocity} />
       <Wheel ref={wheel1} radius={radius} leftSide />
       <Wheel ref={wheel2} radius={radius} />
       <Wheel ref={wheel3} radius={radius} leftSide />

@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { Physics, usePlane, useBox } from '@react-three/cannon';
-import { OrbitControls } from '@react-three/drei';
+import { Loader, OrbitControls, Text as DreiText } from '@react-three/drei';
 import Vehicle from './Vehicle';
 
 const DEFAULT_LETTER_SPACING = 0.2;
@@ -13,7 +13,7 @@ const LEFT_SPAWN_POINT = -15;
 const FORWARD_BOUNDARY = 10;
 const BACKWARD_BOUNDARY = -20;
 
-const Box = ({ onCollide, position, mass = 1, size = [2, 2, 2], wireframe = false, isTrigger = false }) => {
+const Box = ({ onCollide, position, mass = 1, size = [2, 2, 2], wireframe = false, isTrigger = false, opacity = 1 }) => {
   const [ref] = useBox(() => ({
     isTrigger,
     mass,
@@ -23,9 +23,9 @@ const Box = ({ onCollide, position, mass = 1, size = [2, 2, 2], wireframe = fals
   }));
 
   return (
-    <mesh ref={ref} position={position} castShadow>
+    <mesh ref={ref} position={position} castShadow={opacity > 0}>
       <boxGeometry args={size} />
-      <meshPhongMaterial wireframe={wireframe} />
+      <meshPhongMaterial wireframe={wireframe} transparent opacity={opacity} />
     </mesh>
   );
 };
@@ -120,33 +120,44 @@ const Lights = () => {
 
 export default function App() {
   const [bgColor, setBgColor] = useState('#FFB344');
+  const [message, setMessage] = useState('');
 
   return (
     <>
-      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 5, 15], fov: 55 }}>
+      <Canvas dpr={[1, 1.5]} shadows camera={{ position: [0, 5, 15], fov: 50 }}>
         <fog attach="fog" args={[bgColor, 10, 50]} />
         <color attach="background" args={[bgColor]} />
         <Lights />
+        <DreiText position={[0, 0.2, 7]} rotation={[-Math.PI / 2, 0, 0]} fontSize={1}>
+          Drive at me!
+        </DreiText>
         <Physics broadphase="SAP" contactEquationRelaxation={4} friction={1e-3} allowSleep>
-          <Text text="Halloween" textPosition={{ x: -9, y: 2, z: -5 }} size={4} depth={1} />
-          <Plane userData={{ id: 'floor' }} rotation={[-Math.PI / 2, 0, 0]} data={{ name: 'floor' }} bgColor={bgColor} />
-          <Vehicle position={[0, 2, 0]} rotation={[0, -Math.PI / 4, 0]} angularVelocity={[0, 1, 0]} wheelRadius={2} />
-          <Box position={[-5, 2.5, 2]} data={{ name: 'box-1' }} />
-          <Box isTrigger={true} position={[5, 2.5, 3]} data={{ name: 'box-2' }} mass={0} />
-          <Box
-            isTrigger
-            position={[0, 2, 7]}
-            size={[5, 2.5, 1]}
-            wireframe
-            onCollide={(e) => {
-              setBgColor('#150050');
-            }}
-            data={{ name: 'cursed-doorway' }}
-            mass={0}
-          />
+          <Suspense fallback={null}>
+            <Text text="Halloween" textPosition={{ x: -9, y: 2, z: -5 }} size={4} depth={1} />
+            <Plane userData={{ id: 'floor' }} rotation={[-Math.PI / 2, 0, 0]} data={{ name: 'floor' }} bgColor={bgColor} />
+            <Vehicle position={[0, 2, 0]} rotation={[0, -Math.PI / 4, 0]} angularVelocity={[0, 1, 0]} wheelRadius={2} />
+            <Box position={[-5, 2.5, 2]} data={{ name: 'box-1' }} />
+            <Box isTrigger={true} position={[5, 2.5, 3]} data={{ name: 'box-2' }} mass={0} />
+            <Box
+              isTrigger
+              position={[0, 2, 7]}
+              size={[5, 2.5, 1]}
+              wireframe
+              onCollide={(e) => {
+                if (bgColor !== '#150050') {
+                  setBgColor('#150050');
+                  setMessage('This is a work in progress lol');
+                }
+              }}
+              data={{ name: 'cursed-doorway' }}
+              mass={0}
+              opacity={0}
+            />
+          </Suspense>
         </Physics>
         <OrbitControls />
       </Canvas>
+      <Loader />
 
       <div style={{ position: 'absolute', top: 30, left: 40 }}>
         <h1 className="title">It's Halloween!</h1>
@@ -162,6 +173,7 @@ export default function App() {
             <br />
             Reset the car with <strong>r</strong>
           </p>
+          <p>{message}</p>
         </div>
       </div>
     </>
