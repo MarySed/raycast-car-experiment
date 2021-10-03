@@ -154,7 +154,7 @@ export default function App() {
         )}
         <Physics broadphase="SAP" contactEquationRelaxation={4} friction={1e-3} allowSleep>
           <Suspense fallback={null}>
-            <Text text="Halloween" textPosition={{ x: -9, y: 2, z: -5 }} size={4} depth={1} />
+            <Text text="Halloween" textPosition={{ x: -9, y: 2, z: -5 }} size={4} depth={1} mass={10} />
             <Plane userData={{ id: 'floor' }} rotation={[-Math.PI / 2, 0, 0]} data={{ name: 'floor' }} bgColor={bgColor} />
             <Vehicle position={[0, 2, 0]} rotation={[0, -Math.PI / 4, 0]} angularVelocity={[0, 1, 0]} wheelRadius={2} />
             <Box position={[-5, 2.5, 2]} data={{ name: 'box-1' }} />
