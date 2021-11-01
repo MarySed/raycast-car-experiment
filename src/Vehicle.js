@@ -12,7 +12,7 @@ const LEFT_SPAWN_POINT = -12;
 const FORWARD_BOUNDARY = 10;
 const BACKWARD_BOUNDARY = -20;
 
-const Vehicle = ({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 2000, maxBrake = 1e5, position, ...props }) => {
+const Vehicle = ({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = -1.15, steer = 0.6, force = 3000, maxBrake = 1e5, position, ...props }) => {
   const chassis = useRef();
   const wheel1 = useRef();
   const wheel2 = useRef();
