@@ -2,7 +2,7 @@ import { useRef, forwardRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useRaycastVehicle } from '@react-three/cannon';
 import { useControls } from './utils/useControls';
-import Drifter from './Drifter';
+// import Drifter from './Drifter';
 import Wheel from './Wheel';
 
 const RIGHT_BOUNDARY = 14;
@@ -129,7 +129,7 @@ const Vehicle = ({ radius = 0.7, width = 1.2, height = 0.3, front = 1.3, back = 
 
   return (
     <group ref={vehicle} position={[0, -0.3, 0]} name="vehicle">
-      <Drifter ref={chassis} position={position} rotation={props.rotation} angularVelocity={props.angularVelocity} />
+      {/* <Drifter ref={chassis} position={position} rotation={props.rotation} angularVelocity={props.angularVelocity} /> */}
       <Wheel ref={wheel1} radius={radius} leftSide />
       <Wheel ref={wheel2} radius={radius} />
       <Wheel ref={wheel3} radius={radius} leftSide />
